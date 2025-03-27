@@ -1,0 +1,9 @@
+FROM golang:1.20-bullseye-slim
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y tor nodejs npm && apt-get clean && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+COPY CloudStorm/ CloudStorm/
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+EXPOSE 9050 1234 3000 5115
+ENTRYPOINT ["/entrypoint.sh"]

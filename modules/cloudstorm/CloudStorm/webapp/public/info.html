@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Cloudstorm Address & Ledger Setup</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #222; color: #eee; margin: 0; padding: 20px; }
+    .background { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.4)); z-index: -1; }
+    .content { max-width: 600px; margin: 20px auto; padding: 20px; background: rgba(0,0,0,0.85); border: 1px solid #444; border-radius: 8px; }
+    h2, h3 { margin-top: 0; }
+    button { background: #00aaff; color: #000; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
+    button:hover { background: #0088cc; }
+    .notice { background: #444; border-left: 4px solid #00aaff; padding: 10px; margin-bottom: 20px; }
+    .hidden { display: none; }
+    .secure-box { background: #111; padding: 15px; border: 1px solid #555; border-radius: 4px; word-break: break-all; }
+    input { padding: 8px; margin: 5px 0; width: 100%; }
+    input[autocomplete] { autocomplete: off !important; }
+    #debugConsole { background: #111; color: #0f0; padding: 10px; max-height: 200px; overflow-y: auto; }
+    #currentWalletSection { border: 1px solid #00aaff; padding: 10px; margin-bottom: 20px; border-radius: 5px; }
+    #toggleRecoveryBtn { margin-top: 10px; background: #ffcc00; color: #000; }
+    .flex-container { display: flex; flex-direction: row; align-items: flex-start; gap: 20px; }
+    .flex-item { flex: 1; }
+    #networkBar { text-align: right; margin-bottom: 15px; }
+    #networkSelect { padding: 5px; margin-left: 5px; }
+  </style>
+</head>
+<body>
+  <div class="background"></div>
+  <div class="content">
+    <div id="networkBar">
+      <label for="networkSelect">XRPL Network:</label>
+      <select id="networkSelect">
+        <option value="mainnet">Mainnet</option>
+        <option value="testnet">Testnet</option>
+      </select>
+      <button id="saveNetworkBtn">Save Network</button>
+      <span id="networkStatus" style="margin-left:10px; color:#0f0;"></span>
+    </div>
+    <h2>Cloudstorm Address Creation</h2>
+    <div class="notice">
+      <p>
+        This tool will help you configure your Cloudstorm node.
+        <br/><br/>
+        First, create a new Ripple wallet <strong>or</strong> import an existing wallet.
+        <br/><br/>
+        <strong>New Wallet:</strong> The node will create a wallet and immediately display its recovery key.
+        Use this seed to import the wallet into your Xaman app at 
+        <a href="https://apps.xaman.dev" target="_blank" style="color:#00aaff;">https://apps.xaman.dev</a>.
+        <br/><br/>
+        <strong>Existing Wallet:</strong> If you already have a wallet set up via Xaman, enter its details below.
+        <br/><br/>
+        After the wallet is imported and activated in Xaman, the system will automatically detect activation.
+        Once activated, your Xumm API credentials will be used to complete node activation.
+      </p>
+    </div>
+    <div id="currentWalletSection" class="hidden">
+      <h3>Currently Associated Wallet</h3>
+      <p id="currentWalletDisplay"></p>
+      <button id="clearWalletBtn">Clear Wallet</button>
+    </div>
+    <div id="walletOptionSection">
+      <h3>Select Wallet Option</h3>
+      <input type="radio" name="walletOption" id="optionNew" value="new" checked autocomplete="off">
+      <label for="optionNew">Create New Wallet</label><br>
+      <input type="radio" name="walletOption" id="optionExisting" value="existing" autocomplete="off">
+      <label for="optionExisting">Use Existing Wallet</label>
+    </div>
+    <div id="existingWalletSection" class="hidden">
+      <h3>Enter Existing Wallet Details</h3>
+      <input type="text" id="existingAddressInput" placeholder="Enter existing wallet address" autocomplete="off">
+      <input type="text" id="existingRecoveryInput" placeholder="Enter existing recovery key" autocomplete="off">
+      <button id="useExistingBtn">Use Existing Wallet</button>
+      <div id="existingResult" style="margin-top:10px;"></div>
+    </div>
+    <div id="createSection">
+      <button id="createAddressBtn">Create Cloudstorm Wallet</button>
+      <div id="createResult" style="margin-top:10px;"></div>
+    </div>
+    <div class="flex-container">
+      <div class="flex-item" id="activationSection" class="hidden">
+        <h3>Confirm Wallet Activation</h3>
+        <div id="reserveInfo"></div>
+        <button id="activateBtn">Confirm Wallet Activation</button>
+        <div id="activationResult" style="margin-top:10px;"></div>
+      </div>
+      <div class="flex-item">
+        <h3>Xaman Wallet Import</h3>
+        <button id="getXummQRBtn">Show QR for Family Seed</button>
+        <div id="xummQRContainer"></div>
+      </div>
+    </div>
+    <div id="backupSection" class="hidden">
+      <h3>Your Wallet Recovery Key</h3>
+      <p>
+        Please copy the recovery key below and import the wallet into your Xaman app at 
+        <a href="https://apps.xaman.dev" target="_blank" style="color:#00aaff;">https://apps.xaman.dev</a>.
+      </p>
+      <p id="displayKey" class="secure-box hidden"></p>
+      <button id="toggleRecoveryBtn">Show Recovery Key</button>
+    </div>
+    <div id="xummSection" class="hidden" style="margin-top:20px;">
+      <h3>Xumm API Credentials</h3>
+      <p>Once your wallet is activated in Xaman, enter your Xumm API Key and Secret below.</p>
+      <input type="text" id="apiKeyInput" placeholder="Enter Xumm API Key" autocomplete="off">
+      <input type="text" id="apiSecretInput" placeholder="Enter Xumm API Secret" autocomplete="off">
+      <button id="setXummBtn">Set Xumm Credentials</button>
+      <div id="xummResult" style="margin-top:10px;"></div>
+      <h3>Mint NFT</h3>
+      <button id="mintNftBtn">Mint NFT to Wallet</button>
+      <div id="mintResult" style="margin-top:10px;"></div>
+    </div>
+    <div id="verifySection" class="hidden">
+      <h3>Confirm Your Recovery Key (for Imported Wallets)</h3>
+      <p id="verifyPrompt"></p>
+      <input type="text" id="verifyInput" placeholder="Enter requested word(s) here" autocomplete="off">
+      <button id="verifyBtn">Confirm Recovery Key</button>
+      <div id="verifyResult" style="margin-top:10px;"></div>
+    </div>
+    <div id="deriveSection">
+      <h3>Derive XRP Address from Family Seed</h3>
+      <input type="text" id="seedInput" placeholder="Enter family seed" autocomplete="off">
+      <button id="deriveAddressBtn">Derive Address</button>
+      <p id="derivedAddress"></p>
+    </div>
+    <div id="debugSection" style="margin-top:20px;">
+      <h3>Debug Console</h3>
+      <pre id="debugConsole"></pre>
+      <button id="refreshDebug">Refresh Logs</button>
+    </div>
+  </div>
+  <script src="./main.js" defer></script>
+</body>
+</html>

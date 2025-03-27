@@ -1,0 +1,39 @@
+# Use an official Debian-based slim image with modern libraries
+FROM debian:bookworm-slim AS runtime
+
+# Set working directory
+WORKDIR /data/ipfs
+
+# Install necessary dependencies, including latest `libstdc++`
+RUN apt-get update && apt-get install -y \
+    tini \
+    gosu \
+    fuse \
+    ca-certificates \
+    curl \
+    g++ \
+    libssl-dev \
+    libcurl4-openssl-dev \
+    uuid-dev \
+    net-tools \
+    iputils-ping \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy the prebuilt IPFS binary and other files
+COPY go-ipfs/ipfs /usr/local/bin/ipfs
+COPY go-ipfs /usr/local/lib/go-ipfs
+
+# Copy TrinityStateServer binary
+COPY trinity /usr/local/bin/trinity
+
+# Ensure binaries are executable
+RUN chmod +x /usr/local/bin/ipfs /usr/local/bin/trinity
+
+# Expose necessary ports
+EXPOSE 4001 5001 7501 8080 8081
+
+# Start IPFS and TrinityStateServer in the background
+CMD ["/bin/bash", "-c", " \
+    nohup /usr/local/bin/trinity > /data/ipfs/trinity.log 2>&1 & \
+    ipfs init && \
+    ipfs daemon"]

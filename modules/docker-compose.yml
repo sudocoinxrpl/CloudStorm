@@ -1,0 +1,59 @@
+version: "3.8"
+services:
+  cloudstorm:
+    build:
+      context: ./cloudstorm
+      dockerfile: Dockerfile.cloudstorm
+    container_name: cloudstorm_container
+    ports:
+      - "3000:3000"
+      - "5115:5115"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - frontend
+      - backend
+    depends_on:
+      - ipfs
+
+  ipfs:
+    build:
+      context: ./ipfs
+      dockerfile: Dockerfile.ipfs
+    container_name: ipfs_container
+    ports:
+      - "5001:5001"
+    environment:
+      IPFS_LOGGING: info
+      IPFS_PATH: /data/ipfs
+    volumes:
+      - ipfs_data:/data/ipfs
+      - /ipfs:/ipfs
+      - /ipns:/ipns
+    networks:
+      - backend
+
+  clio:
+    build:
+      context: ./clio
+      dockerfile: Dockerfile.clio
+    container_name: clio_container
+    ports:
+      - "5005:5005"
+      - "51235:51235"
+    environment:
+      - XRPL_NETWORK=testnet
+    networks:
+      - backend
+
+networks:
+  frontend:
+    driver: bridge
+    name: frontend_network
+  backend:
+    driver: bridge
+    name: backend_network
+
+volumes:
+  ipfs_data:
+
