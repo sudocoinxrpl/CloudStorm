@@ -1,0 +1,33 @@
+Path: CloudStorm/modules/cloudstorm/CloudStorm/go.mod
+Version: CloudStorm 0.0.1-001
+Change: golang.org/x/crypto  ~> 0.31.0
+Reason: vulnerability
+
+Path: CloudStorm/modules/cloudstorm/CloudStorm/go.mod
+Version: CloudStorm 0.0.1-002
+Change: github.com/libp2p/go-libp2p ~> 0.27.8
+Reason: vulnerability
+
+Path: CloudStorm/modules/cloudstorm/CloudStorm/package-lock.json
+Version: Cloudstorm 0.0.1-003
+Change: updated dependency parse-duration ~> 2.1.3
+Reason: vulnerability
+
+Path: CloudStorm/modules/cloudstorm/CloudStorm/go.mod
+Version: CloudStorm 0.0.1-004
+Change: google.golang.org/protobuf ~> 1.33.0
+Reason: vulnerability
+
+Path: CloudStorm/modules/cloudstorm/CloudStorm/package-lock.json
+Version: Cloudstorm 0.0.1-005
+Change: updated dependency nanoid to 5.0.9
+Reason: vulnerability
+
+Path: 
+Version: Cloudstorm 0.0.1-006
+Change: condensed installer workflow
+Reason: general
+
+
+
+
