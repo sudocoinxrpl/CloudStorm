@@ -36,4 +36,5 @@ CloudStorm uses Docker Compose for segmented deployments to complement the proof
 cd /opt
 git clone https://github.com/sudocoinxrpl/CloudStorm.git
 cd CloudStorm
+sudo chmod +x ./preflight.bash
 sudo ./preflight.bash
