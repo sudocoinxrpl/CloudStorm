@@ -1,0 +1,120 @@
+x-healthcheck-defaults: &healthcheck_defaults
+  interval: 30s
+  timeout: 10s
+  retries: 5
+  start_period: 15s
+
+services:
+  cloudstorm:
+    build:
+      context: ./cloudstorm
+      dockerfile: Dockerfile.cloudstorm
+    container_name: cloudstorm_container
+    hostname: cloudstorm_container
+    privileged: true
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep -f cloudstorm || exit 1"]
+      <<: *healthcheck_defaults
+    ports:
+      - "3000:3000"
+      - "5115:5115"
+    environment:
+      - HOSTNAME=cloudstorm_container
+      - EXPECTED_PEER_COUNT=4
+    volumes:
+      - /var/run/trinity.sock:/var/run/trinity.sock
+      - /dev/shm/trinity:/dev/shm/trinity
+    networks:
+      - frontend
+      - backend
+    depends_on:
+      ipfs:
+        condition: service_healthy
+      symbiote:
+        condition: service_healthy
+    extra_hosts:
+      - "trinity-host:host-gateway"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  ipfs:
+    build:
+      context: ./ipfs
+      dockerfile: Dockerfile.ipfs
+    container_name: ipfs_container
+    hostname: ipfs_container
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep -f ipfs || exit 1"]
+      <<: *healthcheck_defaults
+    ports:
+      - "5001:5001"
+    environment:
+      - HOSTNAME=ipfs_container
+      - IPFS_LOGGING=info
+      - IPFS_PATH=/data/ipfs
+      - TRINITY_HOST=trinity-host
+      - TRINITY_SOCK_PATH=/var/run/trinity-ipfs.sock
+      - EXPECTED_PEER_COUNT=4
+    volumes:
+      - ipfs_data:/data/ipfs
+      - /ipfs:/ipfs
+      - /ipns:/ipns
+      - /var/run/trinity.sock:/var/run/trinity.sock
+      - /dev/shm/trinity:/dev/shm/trinity
+    networks:
+      - backend
+    extra_hosts:
+      - "trinity-host:host-gateway"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  symbiote:
+    build:
+      context: ./symbiote
+      dockerfile: Dockerfile.symbiote
+    container_name: symbiote_container
+    hostname: symbiote_container
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep -f clio_server || exit 1"]
+      <<: *healthcheck_defaults
+    ports:
+      - "51235:51235"
+      - "6005:6005"
+      - "5005:5005"
+    environment:
+      - HOSTNAME=symbiote_container
+      - TRINITY_HOST=trinity-host
+      - TRINITY_SOCK_PATH=/var/run/trinity-symbiote.sock
+      - EXPECTED_PEER_COUNT=4
+    volumes:
+      - /var/run/trinity.sock:/var/run/trinity.sock
+      - /dev/shm/trinity:/dev/shm/trinity
+    networks:
+      - backend
+    extra_hosts:
+      - "trinity-host:host-gateway"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+networks:
+  frontend:
+    driver: bridge
+    name: frontend_network
+  backend:
+    driver: bridge
+    name: backend_network
+
+volumes:
+  ipfs_data:

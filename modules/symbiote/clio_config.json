@@ -1,0 +1,23 @@
+{
+    "database": {
+      "type": "null"
+    },
+    "allow_no_etl": false,
+    "etl_sources": [
+      {
+        "ip": "127.0.0.1",
+        "ws_port": "6005",
+        "grpc_port": "50051"
+      }
+    ],
+    "server": {
+      "ip": "0.0.0.0",
+      "port": 51235,
+      "local_admin": true,
+      "processing_policy": "parallel"
+    },
+    "log_to_console": true,
+    "log_level": "info",
+    "log_directory": "/opt/clio/log"
+  }
+  

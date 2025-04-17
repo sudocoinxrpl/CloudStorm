@@ -1,0 +1,34 @@
+FROM ubuntu:22.04
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TRINITY_HOST=trinity-host
+ENV TRINITY_RAM=/dev/shm/trinity
+ENV PROJECT_DIR=/opt/CloudStorm/CloudStorm
+WORKDIR /opt/CloudStorm
+RUN apt-get update && apt-get install -y software-properties-common && add-apt-repository ppa:ubuntu-toolchain-r/test -y && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y \
+      apt-transport-https ca-certificates wget curl gnupg lsb-release software-properties-common jq torsocks \
+      gcc-13 g++-13 cpp-13 libstdc++-13-dev libgcc-13-dev libssl-dev \
+      libboost-filesystem1.74.0 libboost-system1.74.0 libboost-thread1.74.0 \
+      libgmp-dev libmpfr-dev libmpc-dev flex bison xz-utils apt-utils && \
+    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 130 --slave /usr/bin/g++ g++ /usr/bin/g++-13 && \
+    rm -rf /var/lib/apt/lists/*
+RUN install -m0755 -d /etc/apt/keyrings && \
+    wget -qO- https://repos.ripple.com/repos/api/gpg/key/public | gpg --dearmor -o /etc/apt/keyrings/ripple.gpg && \
+    echo "deb [signed-by=/etc/apt/keyrings/ripple.gpg] https://repos.ripple.com/repos/rippled-deb noble stable" > /etc/apt/sources.list.d/ripple.list && \
+    apt-get update && apt-get install -y rippled && rm -rf /var/lib/apt/lists/*
+COPY gcc-packages/trinity ${PROJECT_DIR}/trinity
+COPY gcc-packages/clio_server /usr/local/bin/clio_server
+RUN chmod +x ${PROJECT_DIR}/trinity /usr/local/bin/clio_server
+RUN mkdir -p /opt/clio/etc /opt/clio/log /opt/rippled
+COPY clio_config.json /opt/clio/etc/config.json
+COPY rippled.cfg /opt/rippled/rippled.cfg
+COPY validators.txt /opt/rippled/validators.txt
+COPY TRINITY_SOCK_PATH /opt/CloudStorm/TRINITY_SOCK_PATH
+COPY TRINITY_SOCK_PATH_HOST /opt/CloudStorm/TRINITY_SOCK_PATH_HOST
+COPY trinity_arm.sh /opt/CloudStorm/trinity_arm.sh
+COPY bootstrap.sh /opt/CloudStorm/bootstrap.sh
+RUN chmod +x /opt/CloudStorm/trinity_arm.sh /opt/CloudStorm/bootstrap.sh
+EXPOSE 51233 51234 7501
+COPY entrypoint.sh /opt/CloudStorm/entrypoint.sh
+RUN chmod +x /opt/CloudStorm/entrypoint.sh
+ENTRYPOINT ["/opt/CloudStorm/entrypoint.sh"]

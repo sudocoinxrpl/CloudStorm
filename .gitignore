@@ -1,0 +1,14 @@
+modules/cloudstorm/gcc-packages
+modules/ipfs/gcc-packages
+modules/symbiote/gcc-packages
+modules/.env
+gcc-packages/clio.zip
+gcc-packages/clio_server
+gcc-packages/trinity
+modules/symbiote/validators.txt
+modules/cloudstorm/TRINITY_SOCK_PATH_HOST
+modules/cloudstormtorm/TRINITY_SOCK_PATH
+modules/ipfs/TRINITY_SOCK_PATH_HOST
+modules/ipfs/TRINITY_SOCK_PATH
+modules/symbiote/TRINITY_SOCK_PATH_HOST
+modules/symbiote/TRINITY_SOCK_PATH

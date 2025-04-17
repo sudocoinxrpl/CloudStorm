@@ -1,0 +1,57 @@
+FROM ubuntu:22.04
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TRINITY_HOST=trinity-host
+ENV TRINITY_RAM=/dev/shm/trinity
+ENV PROJECT_DIR=/opt/CloudStorm/CloudStorm
+WORKDIR /data/ipfs
+
+RUN apt-get update && \
+    apt-get install -y software-properties-common && \
+    add-apt-repository ppa:ubuntu-toolchain-r/test -y && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN apt-get update && \
+    apt-get install -y \
+      tini \
+      gosu \
+      fuse \
+      tor \
+      ca-certificates \
+      curl \
+      xxd \
+      g++-13 \
+      gcc-13 \
+      libstdc++6 \
+      libssl-dev \
+      libcurl4-openssl-dev \
+      uuid-dev \
+      net-tools \
+      iputils-ping \
+      jq && \
+    update-alternatives \
+      --install /usr/bin/gcc gcc /usr/bin/gcc-13 130 \
+      --slave   /usr/bin/g++ g++ /usr/bin/g++-13 && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY gcc-packages/trinity ${PROJECT_DIR}/trinity
+COPY go-ipfs/ipfs         /usr/local/bin/ipfs
+COPY go-ipfs              /usr/local/lib/go-ipfs
+
+RUN chmod +x \
+      /usr/local/bin/ipfs \
+      ${PROJECT_DIR}/trinity
+
+COPY TRINITY_SOCK_PATH      /opt/CloudStorm/TRINITY_SOCK_PATH
+COPY TRINITY_SOCK_PATH_HOST /opt/CloudStorm/TRINITY_SOCK_PATH_HOST
+COPY trinity_arm.sh        /opt/CloudStorm/trinity_arm.sh
+COPY bootstrap.sh          /opt/CloudStorm/bootstrap.sh
+COPY entrypoint.sh         /opt/CloudStorm/entrypoint.sh
+
+RUN chmod +x \
+      /opt/CloudStorm/trinity_arm.sh \
+      /opt/CloudStorm/bootstrap.sh \
+      /opt/CloudStorm/entrypoint.sh
+
+EXPOSE 4001 5001 8080 9050 7501
+
+ENTRYPOINT ["/opt/CloudStorm/entrypoint.sh"]
